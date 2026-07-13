@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Contact Directory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#EEF0FB', 100: '#DDE0F7', 200: '#B9C0EF',
+                            500: '#7B85DC', 600: '#5E6AD2', 700: '#4A56C0',
+                            800: '#3A45A8', 900: '#2A3284',
+                        },
+                        neutral: {
+                            0: '#FFFFFF', 50: '#F8FAFC', 100: '#F1F5F9',
+                            200: '#E2E8F0', 300: '#CBD5E1', 400: '#94A3B8',
+                            500: '#64748B', 600: '#475569', 700: '#334155',
+                            800: '#1E293B', 900: '#0F172A', 950: '#020617',
+                        }
+                    },
+                    borderRadius: {
+                        'md': '6px',
+                        'lg': '8px',
+                        'xl': '12px',
+                    },
+                    boxShadow: {
+                        'xs': '0 1px 2px 0 rgba(15, 23, 42, 0.04)',
+                        'sm': '0 1px 2px 0 rgba(15, 23, 42, 0.05), 0 1px 3px 0 rgba(15, 23, 42, 0.06)',
+                        'md': '0 2px 4px -1px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.3.1",
+            "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+            "react-dom": "https://esm.sh/react-dom@18.3.1",
+            "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+            "framer-motion": "https://esm.sh/framer-motion@11.3.2?external=react,react-dom",
+            "lucide-react": "https://esm.sh/lucide-react@0.400.0?external=react,react-dom",
+            "clsx": "https://esm.sh/clsx@2.1.1",
+            "tailwind-merge": "https://esm.sh/tailwind-merge@2.3.0"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module" data-presets="react">
+        import React, { useState, useMemo } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { motion, AnimatePresence } from 'framer-motion';
+        import { 
+            Search, Filter, Mail, Phone, Building2, Briefcase, 
+            MapPin, ChevronDown, MoreHorizontal, User,
+            Plus, Download, LayoutGrid, List
+        } from 'lucide-react';
+        import { clsx } from 'clsx';
+        import { twMerge } from 'tailwind-merge';
+
+        function cn(...inputs) {
+            return twMerge(clsx(inputs));
+        }
+
+        const PROPERTIES = [
+            "Mont Bleu", "Oakdale", "Villeroy", "Indaba", "Malindi", "Sandpiper Mansions"
+        ];
+
+        const ROLES = [
+            "Contractor", "Property Manager", "Maintenance", "Legal Counsel", "Architect"
+        ];
+
+        const COMPANIES = [
+            "Blue Build Co", "Oak Management", "Villeroy Services", "Indaba Group", "Coastline Realty", "Urban Designs", "Metro Electric", "Safe Hands Security"
+        ];
+
+        const MOCK_DATA = [
+            { id: 1, name: "Jean Pierre", company: "Blue Build Co", role: "Contractor", property: "Mont Bleu", email: "jean@bluebuild.com", phone: "+33 1 23 45 67 89", accent: "#3B82F6", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=128&h=128&fit=crop&q=80" },
+            { id: 2, name: "Sarah Smith", company: "Oak Management", role: "Property Manager", property: "Oakdale", email: "sarah@oakmgmt.com", phone: "+44 20 7946 0000", accent: "#10B981", logo: "https://images.unsplash.com/photo-1542744094-24638eff58bb?w=128&h=128&fit=crop&q=80" },
+            { id: 3, name: "Marcus Villeroy", company: "Villeroy Services", role: "Architect", property: "Villeroy", email: "marcus@villeroy.com", phone: "+49 30 1234567", accent: "#8B5CF6", logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=128&h=128&fit=crop&q=80" },
+            { id: 4, name: "Lindiwe Dube", company: "Indaba Group", role: "Legal Counsel", property: "Indaba", email: "lindiwe@indaba.co.za", phone: "+27 11 123 4567", accent: "#F59E0B", logo: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=128&h=128&fit=crop&q=80" },
+            { id: 5, name: "David Malan", company: "Coastline Realty", role: "Leasing Agent", property: "Malindi", email: "david@coastline.com", phone: "+254 20 123 4567", accent: "#EC4899", logo: "https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=128&h=128&fit=crop&q=80" },
+            { id: 6, name: "Robert Reed", company: "Urban Designs", role: "Contractor", property: "Sandpiper Mansions", email: "robert@urbandesigns.com", phone: "+1 212 555 0123", accent: "#6366F1", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=128&h=128&fit=crop&q=80" },
+            { id: 7, name: "Alice Green", company: "Blue Build Co", role: "Contractor", property: "Villeroy", email: "alice@bluebuild.com", phone: "+33 1 23 45 67 90", accent: "#3B82F6", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=128&h=128&fit=crop&q=80" },
+            { id: 8, name: "Tom Oak", company: "Oak Management", role: "Contractor", property: "Oakdale", email: "tom@oakmgmt.com", phone: "+44 20 7946 1111", accent: "#10B981", logo: "https://images.unsplash.com/photo-1542744094-24638eff58bb?w=128&h=128&fit=crop&q=80" },
+            { id: 9, name: "Sipho Indaba", company: "Indaba Group", role: "Contractor", property: "Indaba", email: "sipho@indaba.co.za", phone: "+27 11 123 4568", accent: "#F59E0B", logo: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=128&h=128&fit=crop&q=80" },
+            { id: 10, name: "Elena Rossi", company: "Metro Electric", role: "Contractor", property: "Malindi", email: "elena@metroelec.com", phone: "+39 02 1234567", accent: "#06B6D4", logo: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=128&h=128&fit=crop&q=80" },
+            { id: 11, name: "Kevin Villeroy", company: "Safe Hands Security", role: "Contractor", property: "Villeroy", email: "kevin@safehands.com", phone: "+49 30 7654321", accent: "#F43F5E", logo: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=128&h=128&fit=crop&q=80" },
+            { id: 12, name: "Sophie Sandpiper", company: "Urban Designs", role: "Property Manager", property: "Sandpiper Mansions", email: "sophie@sandpiper.com", phone: "+1 212 555 9876", accent: "#6366F1", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=128&h=128&fit=crop&q=80" },
+        ];
+
+        const ContactCard = ({ contact }) => {
+            return (
+                <motion.div 
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    whileHover={{ y: -4 }}
+                    className="group bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                    <div className="h-1.5 w-full" style={{ backgroundColor: contact.accent }} />
+                    <div className="p-5">
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="w-12 h-12 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center overflow-hidden">
+                                <img src={contact.logo} alt={contact.company} className="w-full h-full object-cover" />
+                            </div>
+                            <button className="text-neutral-400 hover:text-neutral-600 p-1 rounded-md hover:bg-neutral-50 transition-colors">
+                                <MoreHorizontal size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-1 mb-4">
+                            <h3 className="font-semibold text-neutral-900 text-lg leading-tight">{contact.name}</h3>
+                            <div className="flex items-center gap-1.5 text-neutral-500 text-sm">
+                                <Briefcase size={14} />
+                                <span>{contact.role}</span>
+                                <span className="text-neutral-300">•</span>
+                                <span>{contact.company}</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2.5">
+                            <div className="flex items-center gap-2.5 text-neutral-600 text-sm">
+                                <MapPin size={16} className="text-neutral-400 shrink-0" />
+                                <span className="truncate">{contact.property}</span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-neutral-600 text-sm">
+                                <Mail size={16} className="text-neutral-400 shrink-0" />
+                                <span className="truncate">{contact.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-neutral-600 text-sm">
+                                <Phone size={16} className="text-neutral-400 shrink-0" />
+                                <span>{contact.phone}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="px-5 py-3 bg-neutral-50 border-t border-neutral-100 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="text-brand-600 font-medium text-xs hover:underline">View Details</button>
+                        <div className="flex gap-2">
+                            <button className="p-1.5 rounded-full bg-white border border-neutral-200 text-neutral-500 hover:text-brand-600 transition-colors shadow-xs">
+                                <Mail size={14} />
+                            </button>
+                            <button className="p-1.5 rounded-full bg-white border border-neutral-200 text-neutral-500 hover:text-brand-600 transition-colors shadow-xs">
+                                <Phone size={14} />
+                            </button>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const FilterDropdown = ({ label, icon: Icon, options, value, onChange }) => {
+            const [isOpen, setIsOpen] = useState(false);
+
+            return (
+                <div className="relative">
+                    <button 
+                        onClick={() => setIsOpen(!isOpen)}
+                        className={cn(
+                            "flex items-center gap-2 px-3 h-9 rounded-lg text-sm font-medium border transition-all",
+                            value ? "bg-brand-50 border-brand-200 text-brand-700" : "bg-white border-neutral-200 text-neutral-700 hover:border-neutral-300 shadow-sm"
+                        )}
+                    >
+                        <Icon size={16} className={value ? "text-brand-600" : "text-neutral-400"} />
+                        <span>{value || label}</span>
+                        <ChevronDown size={14} className={cn("transition-transform", isOpen && "rotate-180")} />
+                    </button>
+                    
+                    <AnimatePresence>
+                        {isOpen && (
+                            <>
+                                <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 4 }}
+                                    className="absolute left-0 mt-2 w-56 bg-white border border-neutral-200 rounded-xl shadow-lg z-20 overflow-hidden py-1"
+                                >
+                                    <button 
+                                        onClick={() => { onChange(""); setIsOpen(false); }}
+                                        className="w-full text-left px-4 py-2 text-sm hover:bg-neutral-50 text-neutral-500 italic"
+                                    >
+                                        Clear Filter
+                                    </button>
+                                    {options.map(opt => (
+                                        <button 
+                                            key={opt}
+                                            onClick={() => { onChange(opt); setIsOpen(false); }}
+                                            className={cn(
+                                                "w-full text-left px-4 py-2 text-sm transition-colors",
+                                                value === opt ? "bg-brand-50 text-brand-700 font-medium" : "text-neutral-700 hover:bg-neutral-50"
+                                            )}
+                                        >
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [search, setSearch] = useState("");
+            const [filterCompany, setFilterCompany] = useState("");
+            const [filterRole, setFilterRole] = useState("");
+            const [filterProperty, setFilterProperty] = useState("");
+
+            const filteredContacts = useMemo(() => {
+                return MOCK_DATA.filter(contact => {
+                    const matchesSearch = contact.name.toLowerCase().includes(search.toLowerCase()) || 
+                                        contact.company.toLowerCase().includes(search.toLowerCase());
+                    const matchesCompany = !filterCompany || contact.company === filterCompany;
+                    const matchesRole = !filterRole || contact.role === filterRole;
+                    const matchesProperty = !filterProperty || contact.property === filterProperty;
+                    
+                    return matchesSearch && matchesCompany && matchesRole && matchesProperty;
+                });
+            }, [search, filterCompany, filterRole, filterProperty]);
+
+            const clearAllFilters = () => {
+                setSearch("");
+                setFilterCompany("");
+                setFilterRole("");
+                setFilterProperty("");
+            };
+
+            const hasActiveFilters = search || filterCompany || filterRole || filterProperty;
+
+            return (
+                <div className="min-h-screen flex flex-col text-neutral-900">
+                    {/* Header */}
+                    <header className="bg-white border-b border-neutral-200 sticky top-0 z-30">
+                        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white shadow-md shadow-brand-200">
+                                    <Building2 size={18} />
+                                </div>
+                                <h1 className="text-xl font-bold tracking-tight text-neutral-900">PropertyContacts</h1>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                                <button className="p-2 text-neutral-500 hover:bg-neutral-100 rounded-lg transition-colors">
+                                    <Download size={20} />
+                                </button>
+                                <button className="flex items-center gap-2 px-4 h-9 bg-brand-600 text-white rounded-lg text-sm font-semibold hover:bg-brand-700 shadow-sm transition-all active:scale-95">
+                                    <Plus size={18} />
+                                    <span>Add Contact</span>
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Content */}
+                    <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+                        {/* Filters Bar */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search contacts..." 
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="pl-10 pr-4 h-9 w-64 bg-white border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm"
+                                    />
+                                </div>
+                                
+                                <div className="h-6 w-px bg-neutral-200 mx-1 hidden md:block" />
+                                
+                                <FilterDropdown 
+                                    label="All Companies" 
+                                    icon={Building2} 
+                                    options={COMPANIES} 
+                                    value={filterCompany}
+                                    onChange={setFilterCompany}
+                                />
+                                <FilterDropdown 
+                                    label="All Roles" 
+                                    icon={Briefcase} 
+                                    options={ROLES} 
+                                    value={filterRole}
+                                    onChange={setFilterRole}
+                                />
+                                <FilterDropdown 
+                                    label="All Properties" 
+                                    icon={MapPin} 
+                                    options={PROPERTIES} 
+                                    value={filterProperty}
+                                    onChange={setFilterProperty}
+                                />
+
+                                <div className="h-6 w-px bg-neutral-200 mx-1 hidden md:block" />
+
+                                <button 
+                                    onClick={() => setFilterRole(filterRole === "Contractor" ? "" : "Contractor")}
+                                    className={cn(
+                                        "px-3 h-9 rounded-lg text-sm font-medium border transition-all flex items-center gap-2",
+                                        filterRole === "Contractor" ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-200" : "bg-white border-neutral-200 text-neutral-700 hover:border-neutral-300 shadow-sm"
+                                    )}
+                                >
+                                    Contractors
+                                </button>
+
+                                {hasActiveFilters && (
+                                    <button 
+                                        onClick={clearAllFilters}
+                                        className="text-neutral-500 hover:text-neutral-900 text-sm font-medium transition-colors"
+                                    >
+                                        Reset All
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="flex items-center bg-white border border-neutral-200 rounded-lg p-0.5 shadow-sm">
+                                <button className="p-1.5 rounded-md bg-neutral-100 text-neutral-900 shadow-xs">
+                                    <LayoutGrid size={18} />
+                                </button>
+                                <button className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 transition-colors">
+                                    <List size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Grid View */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <AnimatePresence mode="popLayout">
+                                {filteredContacts.map(contact => (
+                                    <ContactCard key={contact.id} contact={contact} />
+                                ))}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Empty State */}
+                        {filteredContacts.length === 0 && (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="flex flex-col items-center justify-center py-24 text-center"
+                            >
+                                <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-300 mb-4">
+                                    <Search size={32} />
+                                </div>
+                                <h3 className="text-lg font-semibold text-neutral-900">No contacts found</h3>
+                                <p className="text-neutral-500 max-w-xs mt-1">
+                                    Try adjusting your filters or search terms to find what you're looking for.
+                                </p>
+                                <button 
+                                    onClick={clearAllFilters}
+                                    className="mt-6 text-brand-600 font-semibold hover:underline"
+                                >
+                                    Clear all filters
+                                </button>
+                            </motion.div>
+                        )}
+                    </main>
+
+                    {/* Footer Stats */}
+                    <footer className="bg-white border-t border-neutral-200 py-4">
+                        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between text-xs text-neutral-500">
+                            <div>
+                                Showing <span className="font-semibold text-neutral-900">{filteredContacts.length}</span> of <span className="font-semibold text-neutral-900">{MOCK_DATA.length}</span> contacts
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className="flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                    System Online
+                                </span>
+                                <span>v1.0.4</span>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>
